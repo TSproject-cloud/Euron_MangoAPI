@@ -1,3 +1,4 @@
+from operator import ne
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -67,5 +68,26 @@ async def delete_euron_data(name: str):
     print(f"Document {name} DELTED")
     result = await euron_data.delete_many({"name": name})
     
-    return "result.deleted_count {name} Deleted"
+    return "result.deleted_count {name} "
     
+
+@app.post("/euron/updatedata")
+async def update_euron_data(student_data: eurondata):
+    query_filter = {"name": student_data.name}
+    update_fileds = student_data.dict(exclude_unset=True)
+    new_values = {"$set": update_fileds}
+    print(f"Attempting to update records with name: '{student_data.name}'")
+    print(f"New values to set: {update_fileds}")
+
+    # Corrected: Call update_many on the 'euron_data' collection object
+    result = await euron_data.update_many(query_filter, new_values)
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail=f"No records found for name: '{student_data.name}' to update.")
+
+    return {
+        "message": f"Successfully updated {result.modified_count} record(s).",
+        "matched_count": result.matched_count,
+        "modified_count": result.modified_count
+    }
+
