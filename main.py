@@ -5,6 +5,12 @@ from bson import ObjectId
 import os
 from dotenv import load_dotenv
 
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+
+
+
+
 load_dotenv()
 
 
@@ -54,3 +60,12 @@ async def show_euron_data():
     async for document in cursor:
         iterms.append(euron_helper(document))
     return iterms
+
+
+@app.get("/euron/deletedata")
+async def delete_euron_data(name: str):
+    print(f"Document {name} DELTED")
+    result = await euron_data.delete_many({"name": name})
+    
+    return "result.deleted_count {name} Deleted"
+    
